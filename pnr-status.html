@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PNR Enquiry & Live Status — RAILCONNECT</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      🚆 <span>RAILCONNECT</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="search-trains.html">Search Trains</a></li>
+      <li><a href="pnr-status.html" class="active">PNR Status</a></li>
+      <li><a href="weather-alert.html">Weather Alerts</a></li>
+      <li><a href="berth-exchange.html">Berth Exchange</a></li>
+      <li><a href="booking-history.html">My Bookings</a></li>
+    </ul>
+    <div class="nav-actions"></div>
+  </nav>
+
+  <div class="container" style="max-width: 800px;">
+    <div class="card" style="text-align: center; padding: 32px 24px;">
+      <span style="font-size: 2.5rem;">🔍</span>
+      <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--primary); margin-top: 8px;">10-Digit PNR Status Enquiry</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 520px; margin: 4px auto 20px auto;">
+        Enter your official 10-digit Passenger Name Record (PNR) to retrieve real-time reservation status, coach & berth allocations, or cancellation options.
+      </p>
+
+      <form id="pnrForm" onsubmit="queryPnr(event)" style="max-width: 480px; margin: 0 auto; display: flex; gap: 10px;">
+        <input type="text" id="pnrInput" class="form-control" placeholder="Enter 10-digit PNR (e.g. 4827193056)" maxlength="10" value="4827193056" required style="font-size: 1.1rem; font-family: monospace; letter-spacing: 2px;">
+        <button type="submit" class="btn btn-primary" style="white-space: nowrap;">Track PNR</button>
+      </form>
+
+      <div style="margin-top: 14px; font-size: 0.8rem; color: var(--text-muted);">
+        Demo PNRs:
+        <a href="javascript:void(0)" onclick="setPnr('4827193056')"><strong>4827193056</strong> (Rahul)</a> •
+        <a href="javascript:void(0)" onclick="setPnr('8192304851')"><strong>8192304851</strong> (Priya)</a>
+      </div>
+    </div>
+
+    <!-- PNR Result Container -->
+    <div id="pnrResultCard" style="display: none;" class="card">
+      <div class="card-header">
+        <div>
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">CURRENT BOOKING STATUS</span>
+          <h3 id="resTrainTitle" style="font-size: 1.25rem; font-weight: 800; color: var(--primary);">
+            Train 12638 — Pandian Superfast Express
+          </h3>
+        </div>
+        <span class="badge badge-success" id="resStatusBadge" style="font-size: 0.85rem; padding: 6px 14px;">CONFIRMED</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; background: var(--bg-subtle); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px;">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">PNR NUMBER</div>
+          <div style="font-weight: 800; font-size: 1.15rem; font-family: monospace;" id="resPnrNumber">4827193056</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">JOURNEY DATE</div>
+          <div style="font-weight: 800; font-size: 1.1rem;" id="resJourneyDate">2026-10-10</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">ROUTE CORRIDOR</div>
+          <div style="font-weight: 700; font-size: 0.95rem; color: var(--primary);" id="resRouteDisplay">TPJ ➔ MAS</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">TRAVEL CLASS</div>
+          <div style="font-weight: 800; font-size: 1.1rem;" id="resClass">3A</div>
+        </div>
+      </div>
+
+      <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 10px;">Passenger Berth Allocation</h4>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Passenger Name</th>
+              <th>Age</th>
+              <th>Coach</th>
+              <th>Berth Number</th>
+              <th>Berth Type</th>
+              <th>Booking Status</th>
+            </tr>
+          </thead>
+          <tbody id="resPassengerTable"></tbody>
+        </table>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 12px;">
+        <button type="button" class="btn btn-danger btn-sm" id="btnCancelBooking" onclick="confirmCancelTicket()">
+          ❌ Cancel This Reservation
+        </button>
+        <div style="display: flex; gap: 10px;">
+          <a href="berth-exchange.html" class="btn btn-secondary btn-sm">🤝 Propose Berth Exchange</a>
+          <a id="btnViewDigitalPass" href="ticket.html" class="btn btn-primary btn-sm">📱 View Digital Travel Pass</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/railconnect-mock-engine.js"></script>`r`n  <script src="js/seat-layout-engine.js"></script>`r`n  <script src="js/journey-assistant.js"></script>`r`n  <script src="js/api.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let activePnr = '4827193056';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pnrParam = urlParams.get('pnr');
+      if (pnrParam) {
+        document.getElementById('pnrInput').value = pnrParam;
+        fetchPnr(pnrParam);
+      }
+    });
+
+    function setPnr(val) {
+      document.getElementById('pnrInput').value = val;
+      fetchPnr(val);
+    }
+
+    function queryPnr(e) {
+      e.preventDefault();
+      const pnr = document.getElementById('pnrInput').value.trim();
+      if (pnr.length !== 10) {
+        Auth.showToast('PNR must be exactly 10 digits.', 'warning');
+        return;
+      }
+      fetchPnr(pnr);
+    }
+
+    async function fetchPnr(pnr) {
+      activePnr = pnr;
+      try {
+        const resp = await Api.getPnrStatus(pnr);
+        renderPnrData(resp);
+      } catch (err) {
+        // Realistic fallback for demonstration
+        renderPnrData({
+          pnrNumber: pnr,
+          ticketId: `TKT-${pnr.substring(0, 4)}-01`,
+          trainNumber: '12638',
+          trainName: 'Pandian Superfast Express',
+          fromStationName: 'Tiruchchirappalli Junction (TPJ)',
+          toStationName: 'Chennai Central (MAS)',
+          journeyDate: '2026-10-10',
+          coachType: '3A',
+          totalFare: 530.00,
+          status: 'CONFIRMED',
+          passengers: [{
+            name: pnr === '8192304851' ? 'Priya Patel' : 'Rahul Sharma',
+            age: pnr === '8192304851' ? 27 : 29,
+            coach: 'B1',
+            seatNumber: pnr === '8192304851' ? 3 : 1,
+            berthType: pnr === '8192304851' ? 'UPPER' : 'LOWER',
+            status: 'CONFIRMED'
+          }]
+        });
+      }
+    }
+
+    function renderPnrData(data) {
+      document.getElementById('pnrResultCard').style.display = 'block';
+      document.getElementById('resTrainTitle').textContent = `Train ${data.trainNumber} — ${data.trainName}`;
+      document.getElementById('resPnrNumber').textContent = data.pnrNumber;
+      document.getElementById('resJourneyDate').textContent = data.journeyDate;
+      document.getElementById('resRouteDisplay').textContent = `${data.fromStationName} ➔ ${data.toStationName}`;
+      document.getElementById('resClass').textContent = data.coachType;
+
+      const badge = document.getElementById('resStatusBadge');
+      badge.textContent = data.status;
+      badge.className = data.status === 'CONFIRMED' ? 'badge badge-success' : data.status === 'CANCELLED' ? 'badge badge-danger' : 'badge badge-warning';
+
+      document.getElementById('btnCancelBooking').style.display = data.status === 'CANCELLED' ? 'none' : 'inline-flex';
+      document.getElementById('btnViewDigitalPass').href = `ticket.html?pnr=${data.pnrNumber}`;
+
+      const tbody = document.getElementById('resPassengerTable');
+      tbody.innerHTML = (data.passengers || []).map(p => `
+        <tr>
+          <td><strong>${p.name}</strong></td>
+          <td>${p.age}</td>
+          <td><span class="badge badge-info">${p.coach}</span></td>
+          <td><strong>#${p.seatNumber}</strong></td>
+          <td>${p.berthType}</td>
+          <td><span class="badge ${p.status === 'CONFIRMED' ? 'badge-success' : 'badge-danger'}">${p.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    async function confirmCancelTicket() {
+      const confirmAction = confirm(`Are you sure you want to cancel ticket for PNR ${activePnr}? Standard Indian Railways cancellation fee will be deducted.`);
+      if (!confirmAction) return;
+
+      try {
+        const resp = await Api.cancelBooking(activePnr, 'Passenger voluntary cancellation');
+        Auth.showToast(resp.message || 'Ticket cancelled successfully.', 'success');
+        fetchPnr(activePnr);
+      } catch (err) {
+        Auth.showToast(err.message, 'danger');
+      }
+    }
+  </script>
+</body>
+</html>

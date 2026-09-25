@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passenger Details — RAILCONNECT</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      🚆 <span>RAILCONNECT</span>
+    </a>
+    <div class="nav-actions"></div>
+  </nav>
+
+  <div class="container" style="max-width: 860px;">
+    <!-- Progress Indicator -->
+    <div style="display:flex; justify-content:space-between; margin-bottom:24px; font-size:0.85rem; font-weight:700;">
+      <span style="color:var(--text-muted);">1. Search</span>
+      <span style="color:var(--text-muted);">2. Seat Selection</span>
+      <span style="color:var(--primary); text-decoration:underline;">3. Passenger Info</span>
+      <span style="color:var(--text-muted);">4. Payment</span>
+      <span style="color:var(--text-muted);">5. Digital Pass</span>
+    </div>
+
+    <!-- Journey Recap Card -->
+    <div class="card" style="background:var(--primary-light); border-color:var(--border-focus);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div>
+          <span class="badge badge-primary" id="recapCoachType">3A</span>
+          <h3 style="font-size:1.2rem; font-weight:800; color:var(--primary); margin-top:4px;" id="recapTrainName">
+            Pandian Superfast Express (12638)
+          </h3>
+          <div style="font-size:0.875rem; color:var(--text-muted);" id="recapRoute">
+            TPJ ➔ MAS • Journey Date: 2026-10-10
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:0.8rem; color:var(--text-muted);">Selected Seats</div>
+          <div style="font-size:1.1rem; font-weight:800; color:var(--primary);" id="recapSeatsDisplay">
+            B1-1, B1-2
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form id="passengerForm" onsubmit="handleProceedPayment(event)">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Passenger Information</h3>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="addPassengerRow()">+ Add Co-Passenger</button>
+        </div>
+
+        <div id="passengerRowsContainer">
+          <!-- Dynamic passenger rows -->
+        </div>
+      </div>
+
+      <!-- Contact Details -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Contact & Ticket Delivery Details</h3>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Contact Mobile Number</label>
+            <input type="tel" id="contactPhone" class="form-control" placeholder="10-digit mobile" value="9876543210" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address (For Digital Pass)</label>
+            <input type="email" id="contactEmail" class="form-control" placeholder="name@domain.com" value="rahul@railconnect.com" required>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+        <a href="seat-selection.html" class="btn btn-secondary">⬅ Change Seats</a>
+        <button type="submit" class="btn btn-saffron btn-lg">
+          Proceed to Payment Simulation ➔
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script src="js/railconnect-mock-engine.js"></script>`r`n  <script src="js/seat-layout-engine.js"></script>`r`n  <script src="js/journey-assistant.js"></script>`r`n  <script src="js/api.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let passengerCount = 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const trainName = sessionStorage.getItem('rc_trainName') || 'Pandian Superfast Express (12638)';
+      const from = sessionStorage.getItem('rc_from') || 'TPJ';
+      const to = sessionStorage.getItem('rc_to') || 'MAS';
+      const date = sessionStorage.getItem('rc_date') || '2026-10-10';
+      const coach = sessionStorage.getItem('rc_coachType') || '3A';
+
+      document.getElementById('recapTrainName').textContent = trainName;
+      document.getElementById('recapCoachType').textContent = coach;
+      document.getElementById('recapRoute').textContent = `${from} ➔ ${to} • Journey Date: ${date}`;
+
+      const rawSeats = sessionStorage.getItem('rc_selectedSeats');
+      const seats = rawSeats ? JSON.parse(rawSeats) : [];
+
+      if (seats.length > 0) {
+        document.getElementById('recapSeatsDisplay').textContent =
+          seats.map(s => `${s.coachNumber || 'B1'}-${s.seatNumber}`).join(', ');
+
+        seats.forEach((s, idx) => {
+          addPassengerRow(`Passenger ${idx + 1}`, s.seatId, s.seatNumber, s.berthType);
+        });
+      } else {
+        document.getElementById('recapSeatsDisplay').textContent = 'Auto Allocated';
+        addPassengerRow('Primary Passenger', null, null, 'LOWER');
+      }
+
+      const user = Api.getUser();
+      if (user) {
+        document.getElementById('contactPhone').value = user.phone || '9876543210';
+        document.getElementById('contactEmail').value = user.email || 'rahul@railconnect.com';
+      }
+    });
+
+    function addPassengerRow(defaultName = '', seatId = null, seatNumber = null, pref = 'NO_PREFERENCE') {
+      passengerCount++;
+      const container = document.getElementById('passengerRowsContainer');
+
+      const div = document.createElement('div');
+      div.className = 'passenger-row-item';
+      div.id = `passRow_${passengerCount}`;
+      div.style.cssText = 'padding:14px; background:var(--bg-main); border:1px solid var(--border); border-radius:var(--radius-md); margin-bottom:14px;';
+
+      div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+          <strong style="color:var(--primary); font-size:0.9rem;">
+            Passenger ${passengerCount} ${seatNumber ? `(Allocated Berth: #${seatNumber} ${pref})` : ''}
+          </strong>
+          ${passengerCount > 1 ? `<button type="button" class="btn btn-danger btn-sm" onclick="removeRow('passRow_${passengerCount}')">Remove</button>` : ''}
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control p-name" placeholder="Name as on ID card" value="${defaultName || 'Rahul Sharma'}" required>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Age</label>
+            <input type="number" class="form-control p-age" min="1" max="120" value="29" required onchange="checkSenior(this)">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Gender</label>
+            <select class="form-control p-gender">
+              <option value="MALE" selected>Male</option>
+              <option value="FEMALE">Female</option>
+              <option value="TRANSGENDER">Transgender</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Berth Preference</label>
+            <select class="form-control p-pref">
+              <option value="NO_PREFERENCE">No Preference</option>
+              <option value="LOWER" ${pref === 'LOWER' ? 'selected' : ''}>Lower Berth (LB)</option>
+              <option value="MIDDLE" ${pref === 'MIDDLE' ? 'selected' : ''}>Middle Berth (MB)</option>
+              <option value="UPPER" ${pref === 'UPPER' ? 'selected' : ''}>Upper Berth (UB)</option>
+              <option value="SIDE_LOWER" ${pref === 'SIDE_LOWER' ? 'selected' : ''}>Side Lower (SL)</option>
+              <option value="SIDE_UPPER" ${pref === 'SIDE_UPPER' ? 'selected' : ''}>Side Upper (SU)</option>
+            </select>
+          </div>
+        </div>
+        <input type="hidden" class="p-seat-id" value="${seatId || ''}">
+      `;
+
+      container.appendChild(div);
+    }
+
+    function removeRow(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    function checkSenior(input) {
+      if (parseInt(input.value) >= 60) {
+        Auth.showToast('Senior Citizen detected: Automatic lower berth priority eligible!', 'info');
+      }
+    }
+
+    function handleProceedPayment(e) {
+      e.preventDefault();
+      const rows = document.querySelectorAll('.passenger-row-item');
+      const passengers = [];
+
+      rows.forEach(r => {
+        passengers.push({
+          name: r.querySelector('.p-name').value.trim(),
+          age: parseInt(r.querySelector('.p-age').value),
+          gender: r.querySelector('.p-gender').value,
+          berthPreference: r.querySelector('.p-pref').value,
+          selectedSeatId: r.querySelector('.p-seat-id').value ? parseInt(r.querySelector('.p-seat-id').value) : null
+        });
+      });
+
+      sessionStorage.setItem('rc_passengers', JSON.stringify(passengers));
+      window.location.href = 'payment.html';
+    }
+  </script>
+</body>
+</html>

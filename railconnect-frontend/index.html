@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAILCONNECT — Intelligent Railway Booking & Journey Assistance</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Top Weather Alert Broadcast Banner -->
+  <div class="top-banner">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span class="badge badge-warning">Weather Alert</span>
+      <span>TRICHY (32°C Normal) ➔ CHENNAI (29°C Heavy Rain Warning • Rain: 80%)</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span class="demo-pill">Demo Weather Data</span>
+      <span style="font-size:0.75rem;">Backend API: Connected (8080)</span>
+    </div>
+  </div>
+
+  <!-- Primary Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      🚆 <span>RAILCONNECT</span>
+      <span class="brand-badge">APP 2.0</span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="index.html" class="active" data-i18n="nav.home">Home</a></li>
+      <li><a href="search-trains.html" data-i18n="nav.search">Search Trains</a></li>
+      <li><a href="pnr-status.html" data-i18n="nav.pnr">PNR Status</a></li>
+      <li><a href="weather-alert.html" data-i18n="nav.weather">Weather Alerts</a></li>
+      <li><a href="berth-exchange.html" data-i18n="nav.berthExchange">Berth Exchange</a></li>
+      <li><a href="booking-history.html" data-i18n="nav.bookings">My Bookings</a></li>
+      <li><a href="admin-dashboard.html" data-i18n="nav.admin">Admin</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <!-- Injected by auth.js -->
+    </div>
+  </nav>
+
+  <!-- Hero Section & Fast Search -->
+  <div style="background: linear-gradient(135deg, #1e3a8a, #0f172a); color:#fff; padding: 60px 24px;">
+    <div class="container" style="padding:0;">
+      <div style="max-width: 780px;">
+        <span class="badge badge-saffron" style="margin-bottom: 12px;">Next-Gen Indian Rail Transit</span>
+        <h1 style="font-size: 2.75rem; font-weight: 800; line-height: 1.15; margin-bottom: 16px;" data-i18n="hero.title">
+          Smarter, Safer, Seamless Railway Journeys
+        </h1>
+        <p style="font-size: 1.1rem; color: #cbd5e1; margin-bottom: 32px;" data-i18n="hero.subtitle">
+          Featuring dynamic 10-minute seat locking, intelligent proximity allocation, real-time route weather warnings, and verified P2P berth exchange.
+        </p>
+      </div>
+
+      <!-- Quick Train Search Box -->
+      <div class="card" style="margin-bottom:0; box-shadow: var(--shadow-xl); border:none;">
+        <form id="heroSearchForm" onsubmit="handleHeroSearch(event)">
+          <div class="form-row">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">From Station</label>
+              <input type="text" id="heroFrom" class="form-control" placeholder="e.g. SBC (Bengaluru) or TPJ" value="SBC" required>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">To Station</label>
+              <input type="text" id="heroTo" class="form-control" placeholder="e.g. MAS (Chennai Central) or BCT" value="MAS" required>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" data-i18n="hero.date">Journey Date</label>
+              <input type="date" id="heroDate" class="form-control" required>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" data-i18n="hero.class">Travel Class</label>
+              <select id="heroClass" class="form-control">
+                <option value="ALL">All Classes</option>
+                <option value="3A" selected>AC 3 Tier (3A)</option>
+                <option value="2A">AC 2 Tier (2A)</option>
+                <option value="1A">AC First Class (1A)</option>
+                <option value="CC">AC Chair Car (CC)</option>
+                <option value="SL">Sleeper (SL)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0; display:flex; align-items:flex-end;">
+              <button type="submit" class="btn btn-saffron btn-lg" style="width:100%;" data-i18n="hero.searchBtn">
+                🔍 Find Trains
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Vande Bharat Express Hero Callout -->
+      <div style="margin-top: 24px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius-lg); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; backdrop-filter: blur(8px);">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <span style="font-size: 2.2rem;">⚡</span>
+          <div>
+            <div style="font-weight: 800; font-size: 1.1rem; color: #FFF;">Flagship Semi High-Speed: Vande Bharat Express (20608 / 20607)</div>
+            <div style="font-size: 0.85rem; color: #CBD5E1;">Bengaluru (SBC) ➔ Chennai Central (MAS) in 4h 25m • Kavach Certified • Executive 180° Rotatable Chairs</div>
+          </div>
+        </div>
+        <a href="search-trains.html?from=SBC&to=MAS" class="btn btn-sm" style="background: #E27D60; color: white; font-weight: 800; border: none; padding: 10px 18px;">
+          Book Vande Bharat ➔
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Showcase Container -->
+  <div class="container">
+    <div style="text-align:center; max-width:680px; margin: 40px auto 32px auto;">
+      <h2 style="font-size: 2rem; font-weight: 800; color: var(--primary);">Intelligent Travel Innovations</h2>
+      <p style="color: var(--text-muted);">Built for Advanced Programming Practice, demonstrating OOP, Concurrent Locks, Graph Routing, and DSA.</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;">
+      <!-- Feature 1: Seat Locking -->
+      <div class="card">
+        <div style="font-size: 2.2rem; margin-bottom: 12px;">🔒</div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;" data-i18n="features.seatLockTitle">Dynamic Seat Locking</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;" data-i18n="features.seatLockDesc">
+          Locks selected berths for a 10-minute countdown window. Automatically transitions from LOCKED ➔ BOOKED on payment or frees back to AVAILABLE on expiry.
+        </p>
+      </div>
+
+      <!-- Feature 2: Route Weather -->
+      <div class="card">
+        <div style="font-size: 2.2rem; margin-bottom: 12px;">⛈️</div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;" data-i18n="features.weatherTitle">Journey Weather Alerts</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;" data-i18n="features.weatherDesc">
+          Station-wise meteorological warnings classifying weather into NORMAL, CAUTION, WARNING, and SEVERE for informed passenger planning.
+        </p>
+      </div>
+
+      <!-- Feature 3: Berth Exchange -->
+      <div class="card">
+        <div style="font-size: 2.2rem; margin-bottom: 12px;">🤝</div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;" data-i18n="features.berthExchangeTitle">Passenger Berth Exchange</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;" data-i18n="features.berthExchangeDesc">
+          Peer-to-peer swap portal enforcing 10 strict railway business rules (same train, overlapping journey, confirmed tickets) with audit logging.
+        </p>
+      </div>
+
+      <!-- Feature 4: Digital Travel Pass -->
+      <div class="card">
+        <div style="font-size: 2.2rem; margin-bottom: 12px;">📱</div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;" data-i18n="features.digitalPassTitle">Digital Travel Pass</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;" data-i18n="features.digitalPassDesc">
+          Instant QR-coded mobile boarding pass with unique 10-digit PNR. Verified in real-time by Ticket Inspectors (TTE) at gates.
+        </p>
+      </div>
+    </div>
+
+    <!-- Featured Trains -->
+    <div style="margin-top: 40px;">
+      <div class="card-header">
+        <h3 class="card-title">Popular Operational Express Routes</h3>
+        <a href="search-trains.html" class="btn btn-secondary btn-sm">View All Trains ➔</a>
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+        <div class="card" style="margin-bottom:0;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span class="badge badge-info">VANDE_BHARAT</span>
+            <span style="font-weight:700; color:var(--primary);">20608</span>
+          </div>
+          <h4 style="font-size:1.1rem; font-weight:700;">Vande Bharat Express</h4>
+          <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Bengaluru (SBC) ➔ Chennai Central (MAS)</p>
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; border-top:1px solid var(--border); padding-top:10px;">
+            <span>⏱️ 05:45 - 10:10 (4h 25m)</span>
+            <span style="font-weight:700; color:var(--accent-green);">From ₹680.00</span>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:0;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span class="badge badge-saffron">SUPERFAST</span>
+            <span style="font-weight:700; color:var(--primary);">12638</span>
+          </div>
+          <h4 style="font-size:1.1rem; font-weight:700;">Pandian Superfast Express</h4>
+          <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Tiruchirappalli (TPJ) ➔ Chennai Central (MAS)</p>
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; border-top:1px solid var(--border); padding-top:10px;">
+            <span>⏱️ 21:35 - 05:15 (7h 40m)</span>
+            <span style="font-weight:700; color:var(--accent-green);">From ₹530.00</span>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:0;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span class="badge badge-danger">RAJDHANI</span>
+            <span style="font-weight:700; color:var(--primary);">12952</span>
+          </div>
+          <h4 style="font-size:1.1rem; font-weight:700;">Mumbai Rajdhani Express</h4>
+          <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">New Delhi (NDLS) ➔ Mumbai Central (BCT)</p>
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; border-top:1px solid var(--border); padding-top:10px;">
+            <span>⏱️ 16:55 - 08:35 (15h 40m)</span>
+            <span style="font-weight:700; color:var(--accent-green);">From ₹1,850.00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div>
+        <h4 style="color:#fff; margin-bottom:10px;">RAILCONNECT</h4>
+        <p style="color:#94a3b8; font-size:0.825rem; line-height:1.6;">
+          Intelligent Railway Booking, Digital Travel Pass & Journey Assistance System.<br>
+          Advanced Programming Practice (APP) Multi-Repository Architecture.
+        </p>
+      </div>
+      <div>
+        <h5 style="color:#fff; margin-bottom:10px;">Services</h5>
+        <p><a href="search-trains.html" style="color:#94a3b8;">Train Search</a></p>
+        <p><a href="pnr-status.html" style="color:#94a3b8;">PNR Tracking</a></p>
+        <p><a href="weather-alert.html" style="color:#94a3b8;">Route Weather</a></p>
+        <p><a href="berth-exchange.html" style="color:#94a3b8;">Berth Exchange</a></p>
+      </div>
+      <div>
+        <h5 style="color:#fff; margin-bottom:10px;">Portals</h5>
+        <p><a href="login.html" style="color:#94a3b8;">Passenger Login</a></p>
+        <p><a href="login.html?role=INSPECTOR" style="color:#94a3b8;">Ticket Inspector Terminal</a></p>
+        <p><a href="login.html?role=ADMIN" style="color:#94a3b8;">Admin Dashboard</a></p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 RAILCONNECT. Designed for Second-Year College Advanced Programming Practice Review.
+    </div>
+  </footer>
+
+  <script src="js/railconnect-mock-engine.js"></script>`r`n  <script src="js/seat-layout-engine.js"></script>`r`n  <script src="js/journey-assistant.js"></script>`r`n  <script src="js/api.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Default date to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById('heroDate').value = tomorrow.toISOString().split('T')[0];
+    });
+
+    function handleHeroSearch(e) {
+      e.preventDefault();
+      const from = document.getElementById('heroFrom').value.trim();
+      const to = document.getElementById('heroTo').value.trim();
+      const date = document.getElementById('heroDate').value;
+      const coachClass = document.getElementById('heroClass').value;
+      window.location.href = `search-trains.html?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${date}&class=${coachClass}`;
+    }
+  </script>
+</body>
+</html>

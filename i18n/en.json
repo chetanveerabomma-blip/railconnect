@@ -1,0 +1,50 @@
+{
+  "brand": "RAILCONNECT",
+  "tagline": "Intelligent Railway Booking, Digital Travel Pass & Journey Assistance",
+  "nav": {
+    "home": "Home",
+    "search": "Search Trains",
+    "pnr": "PNR Status",
+    "weather": "Weather Alerts",
+    "berthExchange": "Berth Exchange",
+    "bookings": "My Bookings",
+    "admin": "Admin Dashboard",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "profile": "Profile"
+  },
+  "hero": {
+    "title": "Smarter, Safer, Seamless Railway Journeys",
+    "subtitle": "Featuring dynamic 10-minute seat locking, intelligent proximity allocation, real-time route weather warnings, and P2P berth exchange.",
+    "fromPlaceholder": "Enter Origin Station (e.g. TPJ, NDLS)",
+    "toPlaceholder": "Enter Destination (e.g. MAS, BCT)",
+    "date": "Journey Date",
+    "class": "Class",
+    "searchBtn": "Search Available Trains"
+  },
+  "features": {
+    "seatLockTitle": "Dynamic Seat Locking",
+    "seatLockDesc": "Select your favorite berth with a temporary 10-minute hold to complete booking without double-booking contention.",
+    "weatherTitle": "Journey Weather Alerts",
+    "weatherDesc": "Station-wise precipitation warnings and severe meteorological telemetry for informed journey planning.",
+    "berthExchangeTitle": "Passenger Berth Exchange",
+    "berthExchangeDesc": "Request and accept berth swaps directly with verified fellow travelers on your train and date.",
+    "digitalPassTitle": "Digital Travel Pass",
+    "digitalPassDesc": "Paperless instant QR code pass verifiable by TTE & Station Ticket Inspectors in real time."
+  },
+  "common": {
+    "train": "Train",
+    "departure": "Departure",
+    "arrival": "Arrival",
+    "duration": "Duration",
+    "fare": "Fare",
+    "status": "Status",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "back": "Back",
+    "proceed": "Proceed to Payment",
+    "autoAllocate": "Auto Allocate",
+    "loading": "Loading data..."
+  }
+}

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Bookings & Travel History — RAILCONNECT</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      🚆 <span>RAILCONNECT</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="search-trains.html">Search Trains</a></li>
+      <li><a href="pnr-status.html">PNR Status</a></li>
+      <li><a href="weather-alert.html">Weather Alerts</a></li>
+      <li><a href="berth-exchange.html">Berth Exchange</a></li>
+      <li><a href="booking-history.html" class="active">My Bookings</a></li>
+    </ul>
+    <div class="nav-actions"></div>
+  </nav>
+
+  <div class="container" style="max-width: 960px;">
+
+    <!-- User Header Banner -->
+    <div class="card" style="margin-bottom: 24px; padding: 24px; background: linear-gradient(135deg, rgba(26,54,93,0.04) 0%, rgba(226,125,96,0.06) 100%);">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700;">
+            <span id="userInitial">👤</span>
+          </div>
+          <div>
+            <h2 id="userNameTitle" style="font-size: 1.4rem; font-weight: 800; color: var(--primary); margin: 0;">Passenger Travel History</h2>
+            <p id="userEmailSub" style="color: var(--text-muted); font-size: 0.85rem; margin: 2px 0 0 0;">Manage your active reservations, digital passes, and travel receipts</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <a href="search-trains.html" class="btn btn-primary btn-sm">➕ Book New Ticket</a>
+          <a href="profile.html" class="btn btn-secondary btn-sm">⚙️ Account Settings</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-sm btn-primary" id="filterAll" onclick="filterBookings('ALL')">All Bookings</button>
+        <button class="btn btn-sm btn-secondary" id="filterUpcoming" onclick="filterBookings('UPCOMING')">Upcoming</button>
+        <button class="btn btn-sm btn-secondary" id="filterCompleted" onclick="filterBookings('COMPLETED')">Completed</button>
+        <button class="btn btn-sm btn-secondary" id="filterCancelled" onclick="filterBookings('CANCELLED')">Cancelled</button>
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-muted);">
+        Showing <span id="bookingCount" style="font-weight: 700; color: var(--text-main);">0</span> reservations
+      </div>
+    </div>
+
+    <!-- Bookings Container -->
+    <div id="bookingsList" style="display: flex; flex-direction: column; gap: 20px;">
+      <div class="card" style="text-align: center; padding: 40px;">
+        <div class="spinner" style="margin: 0 auto 16px auto;"></div>
+        <div style="color: var(--text-muted);">Loading your booked journeys from RAILCONNECT ledger...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Cancellation Modal -->
+  <div id="cancelModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 16px;">
+    <div class="card" style="max-width: 480px; width: 100%; box-shadow: var(--shadow-xl); animation: fadeIn 0.2s ease;">
+      <div class="card-header">
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--danger); margin: 0;">⚠️ Cancel Ticket Reservation</h3>
+        <button onclick="closeCancelModal()" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+      </div>
+      <div style="padding: 16px 0;">
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px;">
+          Are you sure you want to cancel booking for PNR <strong id="modalPnr" style="color: var(--primary); font-family: monospace;"></strong>?
+        </p>
+        <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>Booking Total Paid:</span>
+            <strong id="modalPaidFare">₹0.00</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--danger);">
+            <span>Clerkage / Cancellation Fee:</span>
+            <strong id="modalClerkage">₹120.00</strong>
+          </div>
+          <hr style="border: 0; border-top: 1px dashed var(--border); margin: 8px 0;">
+          <div style="display: flex; justify-content: space-between; font-weight: 800; color: var(--accent-green); font-size: 0.95rem;">
+            <span>Estimated Refund to Original Source:</span>
+            <strong id="modalRefund">₹0.00</strong>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reason for Cancellation</label>
+          <select id="cancelReason" class="form-control">
+            <option value="Change of travel plans">Change of travel plans</option>
+            <option value="Weather advisory / severe condition">Weather advisory / severe condition</option>
+            <option value="Personal emergency">Personal emergency</option>
+            <option value="Alternative transit arranged">Alternative transit arranged</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn btn-secondary" onclick="closeCancelModal()">Keep Ticket</button>
+        <button class="btn btn-danger" id="confirmCancelBtn" onclick="executeCancellation()">Confirm Cancellation</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/railconnect-mock-engine.js"></script>`r`n  <script src="js/seat-layout-engine.js"></script>`r`n  <script src="js/journey-assistant.js"></script>`r`n  <script src="js/api.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let allBookings = [];
+    let currentFilter = 'ALL';
+    let targetCancelPnr = null;
+
+    // Demo fallback bookings for offline / direct preview
+    const sampleBookings = [
+      {
+        id: 101,
+        pnr: "4827193056",
+        trainNumber: "12638",
+        trainName: "Pandian Superfast Express",
+        fromStation: "TPJ",
+        fromStationName: "Tiruchchirappalli Jn",
+        toStation: "MS",
+        toStationName: "Chennai Egmore",
+        journeyDate: "2026-10-15",
+        bookingDate: "2026-09-24",
+        coachType: "3A",
+        coachCode: "B1",
+        status: "CONFIRMED",
+        totalFare: 845.00,
+        paymentMode: "UPI (Google Pay)",
+        passengers: [
+          { name: "Rahul Sharma", age: 29, gender: "MALE", seatNumber: "21", berthType: "LOWER", status: "CONFIRMED" },
+          { name: "Sunita Sharma", age: 58, gender: "FEMALE", seatNumber: "22", berthType: "MIDDLE", status: "CONFIRMED" }
+        ]
+      },
+      {
+        id: 102,
+        pnr: "8192304851",
+        trainNumber: "12624",
+        trainName: "Chennai Mail Express",
+        fromStation: "MAS",
+        fromStationName: "Chennai Central",
+        toStation: "SBC",
+        toStationName: "KSR Bengaluru",
+        journeyDate: "2026-10-20",
+        bookingDate: "2026-09-22",
+        coachType: "2A",
+        coachCode: "A1",
+        status: "CONFIRMED",
+        totalFare: 1120.00,
+        paymentMode: "HDFC Credit Card",
+        passengers: [
+          { name: "Rahul Sharma", age: 29, gender: "MALE", seatNumber: "15", berthType: "LOWER", status: "CONFIRMED" }
+        ]
+      },
+      {
+        id: 103,
+        pnr: "9374018264",
+        trainNumber: "12675",
+        trainName: "Kovai Express",
+        fromStation: "MAS",
+        fromStationName: "Chennai Central",
+        toStation: "CBE",
+        toStationName: "Coimbatore Jn",
+        journeyDate: "2026-08-10",
+        bookingDate: "2026-08-01",
+        coachType: "CC",
+        coachCode: "C2",
+        status: "COMPLETED",
+        totalFare: 615.00,
+        paymentMode: "Net Banking",
+        passengers: [
+          { name: "Rahul Sharma", age: 29, gender: "MALE", seatNumber: "45", berthType: "WINDOW", status: "COMPLETED" }
+        ]
+      }
+    ];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = Api.getUser();
+      if (user) {
+        document.getElementById('userNameTitle').textContent = `${user.fullName || user.username}'s Bookings`;
+        document.getElementById('userEmailSub').textContent = `Account: ${user.email} | Member since 2026`;
+        document.getElementById('userInitial').textContent = (user.fullName || user.username).charAt(0).toUpperCase();
+      }
+
+      await loadBookings();
+    });
+
+    async function loadBookings() {
+      const container = document.getElementById('bookingsList');
+      try {
+        const bookings = await Api.getMyBookings();
+        allBookings = (bookings && bookings.length > 0) ? bookings : sampleBookings;
+      } catch (err) {
+        console.warn("Using sample bookings ledger:", err);
+        allBookings = sampleBookings;
+      }
+
+      renderBookings();
+    }
+
+    function filterBookings(type) {
+      currentFilter = type;
+      ['All', 'Upcoming', 'Completed', 'Cancelled'].forEach(btn => {
+        const elem = document.getElementById(`filter${btn}`);
+        if (elem) {
+          elem.className = (btn.toUpperCase() === type) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary';
+        }
+      });
+      renderBookings();
+    }
+
+    function renderBookings() {
+      const container = document.getElementById('bookingsList');
+      const today = new Date().toISOString().split('T')[0];
+
+      let filtered = allBookings.filter(b => {
+        if (currentFilter === 'ALL') return true;
+        if (currentFilter === 'CANCELLED') return b.status === 'CANCELLED';
+        if (currentFilter === 'COMPLETED') return b.status === 'COMPLETED' || (b.journeyDate < today && b.status !== 'CANCELLED');
+        if (currentFilter === 'UPCOMING') return b.status === 'CONFIRMED' && b.journeyDate >= today;
+        return true;
+      });
+
+      document.getElementById('bookingCount').textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="card" style="text-align: center; padding: 48px 24px;">
+            <span style="font-size: 3rem;">🎫</span>
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-top: 12px;">No Bookings Found</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 400px; margin: 6px auto 20px auto;">
+              No reservations match the selected filter category "${currentFilter}".
+            </p>
+            <a href="search-trains.html" class="btn btn-primary">Plan & Book a Journey</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(b => {
+        const isUpcoming = b.status === 'CONFIRMED' && b.journeyDate >= today;
+        const statusBadgeClass = b.status === 'CONFIRMED' ? 'badge-success' :
+                                 b.status === 'CANCELLED' ? 'badge-danger' : 'badge-info';
+
+        const passengerRows = (b.passengers || []).map(p => `
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 8px 12px; font-weight: 600;">${p.name}</td>
+            <td style="padding: 8px 12px; color: var(--text-muted);">${p.age} yrs / ${p.gender}</td>
+            <td style="padding: 8px 12px; font-weight: 700; color: var(--primary);">
+              ${b.coachCode || b.coachType}-${p.seatNumber || 'WL'} (${p.berthType || 'SEAT'})
+            </td>
+            <td style="padding: 8px 12px;">
+              <span class="badge ${b.status === 'CONFIRMED' ? 'badge-success' : 'badge-warning'}" style="font-size: 0.75rem;">
+                ${p.status || b.status}
+              </span>
+            </td>
+          </tr>
+        `).join('');
+
+        return `
+          <div class="card" style="padding: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+            <!-- Header Row -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 14px;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">PNR:</span>
+                  <span style="font-family: monospace; font-size: 1.15rem; font-weight: 800; color: var(--primary); letter-spacing: 1.5px;">${b.pnr}</span>
+                  <span class="badge ${statusBadgeClass}">${b.status}</span>
+                </div>
+                <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-top: 4px;">
+                  ${b.trainNumber} — ${b.trainName}
+                </h3>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 0.75rem; color: var(--text-muted);">TOTAL FARE PAID</div>
+                <div style="font-size: 1.35rem; font-weight: 800; color: var(--primary);">₹${Number(b.totalFare).toFixed(2)}</div>
+                <div style="font-size: 0.75rem; color: var(--accent-green); font-weight: 600;">✓ ${b.paymentMode || 'Prepaid'}</div>
+              </div>
+            </div>
+
+            <!-- Route and Timing Details -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; background: var(--bg-subtle); padding: 14px; border-radius: var(--radius-md); margin-bottom: 16px;">
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">JOURNEY DATE</div>
+                <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">📅 ${b.journeyDate}</div>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">DEPARTURE ➔ DESTINATION</div>
+                <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">
+                  ${b.fromStationName || b.fromStation} (${b.fromStation}) ➔ ${b.toStationName || b.toStation} (${b.toStation})
+                </div>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">CLASS & QUOTA</div>
+                <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">
+                  Coach ${b.coachType} • General Quota (GN)
+                </div>
+              </div>
+            </div>
+
+            <!-- Passenger Breakdown -->
+            <div style="margin-bottom: 16px; overflow-x: auto;">
+              <table style="width: 100%; text-align: left; font-size: 0.85rem; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: var(--bg-main); border-bottom: 2px solid var(--border); color: var(--text-muted);">
+                    <th style="padding: 6px 12px;">Passenger</th>
+                    <th style="padding: 6px 12px;">Demographics</th>
+                    <th style="padding: 6px 12px;">Coach & Berth</th>
+                    <th style="padding: 6px 12px;">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${passengerRows}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Action Buttons Footer -->
+            <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 14px;">
+              <a href="ticket.html?pnr=${b.pnr}" class="btn btn-secondary btn-sm">
+                🎟️ Digital Travel Pass
+              </a>
+              <a href="pnr-status.html?pnr=${b.pnr}" class="btn btn-secondary btn-sm">
+                🔍 Track Live PNR
+              </a>
+              ${isUpcoming ? `
+                <a href="berth-exchange.html?bookingId=${b.id}&trainId=${b.trainNumber}" class="btn btn-outline btn-sm" style="border: 1px solid var(--primary); color: var(--primary);">
+                  🔄 Berth Exchange
+                </a>
+                <button class="btn btn-danger btn-sm" onclick="promptCancel('${b.pnr}', ${b.totalFare})">
+                  ❌ Cancel Ticket
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function promptCancel(pnr, fare) {
+      targetCancelPnr = pnr;
+      const clerkage = 120.00;
+      const refund = Math.max(0, fare - clerkage);
+
+      document.getElementById('modalPnr').textContent = pnr;
+      document.getElementById('modalPaidFare').textContent = `₹${Number(fare).toFixed(2)}`;
+      document.getElementById('modalClerkage').textContent = `₹${clerkage.toFixed(2)}`;
+      document.getElementById('modalRefund').textContent = `₹${refund.toFixed(2)}`;
+
+      const modal = document.getElementById('cancelModal');
+      modal.style.display = 'flex';
+    }
+
+    function closeCancelModal() {
+      document.getElementById('cancelModal').style.display = 'none';
+      targetCancelPnr = null;
+    }
+
+    async function executeCancellation() {
+      if (!targetCancelPnr) return;
+
+      const reason = document.getElementById('cancelReason').value;
+      const btn = document.getElementById('confirmCancelBtn');
+      btn.disabled = true;
+      btn.textContent = 'Processing Refund...';
+
+      try {
+        await Api.cancelBooking(targetCancelPnr, reason);
+        Auth.showToast(`Ticket ${targetCancelPnr} cancelled successfully. Refund processed to original account.`, 'success');
+      } catch (err) {
+        console.warn("Simulating local cancellation state:", err);
+        // Fallback update in local state for smooth demo
+        const found = allBookings.find(b => b.pnr === targetCancelPnr);
+        if (found) {
+          found.status = 'CANCELLED';
+        }
+        Auth.showToast(`Booking ${targetCancelPnr} cancelled successfully (Simulated). Refund approved.`, 'success');
+      }
+
+      closeCancelModal();
+      btn.disabled = false;
+      btn.textContent = 'Confirm Cancellation';
+      renderBookings();
+    }
+  </script>
+</body>
+</html>

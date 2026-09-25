@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Train Timetable & Route Details — RAILCONNECT</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      🚆 <span>RAILCONNECT</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="search-trains.html" class="active">Search Trains</a></li>
+      <li><a href="pnr-status.html">PNR Status</a></li>
+      <li><a href="weather-alert.html">Weather Alerts</a></li>
+    </ul>
+    <div class="nav-actions"></div>
+  </nav>
+
+  <div class="container">
+    <div style="margin-bottom: 20px;">
+      <a href="search-trains.html" class="btn btn-secondary btn-sm">⬅ Back to Search Results</a>
+    </div>
+
+    <div class="card" id="trainHeaderCard">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <span class="badge badge-saffron" id="trainTypeBadge">EXPRESS</span>
+          <h1 id="trainTitle" style="font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-top: 6px;">
+            Train 12638 — Pandian Superfast Express
+          </h1>
+          <p id="trainRouteSub" style="color: var(--text-muted); font-size: 0.95rem;">
+            Tiruchchirappalli (TPJ) ➔ Chennai Central (MAS)
+          </p>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 0.8rem; color: var(--text-muted);">Days of Operation</div>
+          <div style="font-weight: 700; color: var(--accent-green);" id="runningDays">MON, TUE, WED, THU, FRI, SAT, SUN</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timetable and Route Sequence Table -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Intermediate Stations & Timetable Schedule</h3>
+        <span class="badge badge-info">Standard Route Map</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Station Code</th>
+              <th>Station Name</th>
+              <th>Distance (km)</th>
+              <th>Arrival</th>
+              <th>Departure</th>
+              <th>Halt (min)</th>
+              <th>Day</th>
+            </tr>
+          </thead>
+          <tbody id="routeTableBody">
+            <tr>
+              <td>1</td>
+              <td><strong>TPJ</strong></td>
+              <td>Tiruchchirappalli Junction</td>
+              <td>0.0</td>
+              <td>Source</td>
+              <td>21:35</td>
+              <td>-</td>
+              <td>Day 1</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><strong>VRI</strong></td>
+              <td>Vriddhachalam Junction</td>
+              <td>123.0</td>
+              <td>23:10</td>
+              <td>23:12</td>
+              <td>2 min</td>
+              <td>Day 1</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><strong>VM</strong></td>
+              <td>Villupuram Junction</td>
+              <td>178.0</td>
+              <td>00:05</td>
+              <td>00:10</td>
+              <td>5 min</td>
+              <td>Day 2</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><strong>TBM</strong></td>
+              <td>Tambaram</td>
+              <td>312.0</td>
+              <td>04:28</td>
+              <td>04:30</td>
+              <td>2 min</td>
+              <td>Day 2</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td><strong>MAS</strong></td>
+              <td>Chennai Central (Puratchi Thalaivar)</td>
+              <td>336.0</td>
+              <td>05:15</td>
+              <td>Destination</td>
+              <td>-</td>
+              <td>Day 2</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Coach Composition Grid -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Rake Configuration & Coach Composition</h3>
+      </div>
+      <p style="color:var(--text-muted); font-size:0.875rem; margin-bottom:14px;">
+        Standard LHB Rake composition for Pandian Superfast Express:
+      </p>
+      <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:10px;">
+        <span class="badge badge-info" style="padding:10px 14px;">ENG</span>
+        <span class="badge badge-secondary" style="padding:10px 14px;">SLR</span>
+        <span class="badge badge-success" style="padding:10px 14px;">S1 (SL)</span>
+        <span class="badge badge-success" style="padding:10px 14px;">S2 (SL)</span>
+        <span class="badge badge-warning" style="padding:10px 14px;">B1 (3A)</span>
+        <span class="badge badge-warning" style="padding:10px 14px;">B2 (3A)</span>
+        <span class="badge badge-saffron" style="padding:10px 14px;">A1 (2A)</span>
+        <span class="badge badge-danger" style="padding:10px 14px;">H1 (1A)</span>
+        <span class="badge badge-secondary" style="padding:10px 14px;">EOG</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/railconnect-mock-engine.js"></script>`r`n  <script src="js/seat-layout-engine.js"></script>`r`n  <script src="js/journey-assistant.js"></script>`r`n  <script src="js/api.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const trainId = urlParams.get('trainId');
+      if (trainId === '1') {
+        document.getElementById('trainTypeBadge').textContent = 'VANDE_BHARAT';
+        document.getElementById('trainTitle').textContent = 'Train 20608 — Vande Bharat Express';
+        document.getElementById('trainRouteSub').textContent = 'KSR Bengaluru (SBC) ➔ Chennai Central (MAS)';
+        document.getElementById('runningDays').textContent = 'MON, TUE, WED, THU, FRI, SUN';
+      } else if (trainId === '3') {
+        document.getElementById('trainTypeBadge').textContent = 'RAJDHANI';
+        document.getElementById('trainTitle').textContent = 'Train 12952 — Mumbai Rajdhani Express';
+        document.getElementById('trainRouteSub').textContent = 'New Delhi (NDLS) ➔ Mumbai Central (BCT)';
+        document.getElementById('runningDays').textContent = 'MON, TUE, WED, THU, FRI, SAT, SUN';
+      }
+    });
+  </script>
+</body>
+</html>

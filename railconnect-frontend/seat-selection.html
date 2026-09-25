@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Seat & Berth Selection — RAILCONNECT</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .cabin-divider {
+      grid-column: 1 / -1;
+      border-top: 1px dashed var(--border);
+      margin: 10px 0 6px 0;
+      padding-top: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      🚆 <span>RAILCONNECT</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="search-trains.html">Search Trains</a></li>
+      <li><a href="pnr-status.html">PNR Status</a></li>
+      <li><a href="weather-alert.html">Weather Alerts</a></li>
+    </ul>
+    <div class="nav-actions"></div>
+  </nav>
+
+  <div class="container">
+    <!-- Progress Indicator -->
+    <div style="display:flex; justify-content:space-between; max-width:600px; margin:0 auto 24px auto; font-size:0.85rem; font-weight:700;">
+      <span style="color:var(--primary);">1. Search</span>
+      <span style="color:var(--primary); text-decoration:underline;">2. Seat Selection</span>
+      <span style="color:var(--text-muted);">3. Passenger Info</span>
+      <span style="color:var(--text-muted);">4. Payment</span>
+      <span style="color:var(--text-muted);">5. Digital Pass</span>
+    </div>
+
+    <!-- Active Lock Status Bar -->
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div>
+        <h2 style="font-size:1.4rem; font-weight:800; color:var(--primary);">
+          Select Berth / Seat (<span id="trainDetailsHeader">Train 12638 • 3A</span>)
+        </h2>
+        <p style="color:var(--text-muted); font-size:0.85rem;">
+          Pick your preferred berth or click <strong>Auto Allocate</strong> for intelligent algorithm assignment.
+        </p>
+      </div>
+
+      <!-- 10-Minute Dynamic Lock Countdown Timer Box -->
+      <div id="lockTimerContainer" style="display:none;">
+        <div class="seat-timer-box">
+          <span>⏳ Locked:</span>
+          <span id="countdownDisplay" style="font-size:1.1rem; font-family:monospace;">10:00</span>
+          <span style="font-size:0.75rem;">(Hold Window)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions & Auto-Allocate Bar -->
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <label style="font-weight:700; font-size:0.9rem;">Select Coach:</label>
+        <select id="coachSelect" class="form-control" style="width:140px;" onchange="changeCoach()">
+          <option value="6" selected>Coach B1 (3A)</option>
+          <option value="1">Coach C1 (CC)</option>
+        </select>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button type="button" class="btn btn-secondary" onclick="triggerAutoAllocate()">
+          ⚡ Auto Allocate (Intelligent Algorithm)
+        </button>
+        <button type="button" class="btn btn-primary" id="btnProceedPassengers" onclick="proceedToPassengers()" disabled>
+          Continue with <span id="selectedCountBadge">0</span> Seat(s) ➔
+        </button>
+      </div>
+    </div>
+
+    <!-- Seat Legend -->
+    <div class="seat-legend">
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:#fff; border:1px solid var(--border);"></div>
+        <span>Available</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:var(--primary);"></div>
+        <span>Selected by You</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:var(--accent-saffron-light); border:1px solid var(--accent-saffron);"></div>
+        <span>Temporarily Locked (10 min)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:var(--bg-subtle); border:1px solid #cbd5e1;"></div>
+        <span>Already Booked</span>
+      </div>
+    </div>
+
+    <!-- Interactive Visual Coach Seat Grid -->
+    <div class="seat-map-container">
+      <div class="coach-header">
+        <div>
+          <strong id="coachDisplayTitle" style="font-size:1.1rem; color:var(--primary);">Coach B1 — AC 3-Tier Sleeper (64 Berths)</strong>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Standard LHB Layout: Lower (LB), Middle (MB), Upper (UB), Side Lower (SL), Side Upper (SU)</div>
+        </div>
+        <div>
+          <span class="badge badge-success" id="coachAvailableCount">Available: 62</span>
+        </div>
+      </div>
+
+      <div class="seat-grid" id="seatGrid">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <script src="js/railconnect-mock-engine.js"></script>`r`n  <script src="js/seat-layout-engine.js"></script>`r`n  <script src="js/journey-assistant.js"></script>`r`n  <script src="js/api.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let selectedSeats = [];
+    let currentCoachId = 6; // Default to B1 (Train 2 Pandian)
+    let countdownInterval = null;
+    let lockExpiryTimestamp = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const trainName = sessionStorage.getItem('rc_trainName') || 'Pandian Superfast Express';
+      const coachType = sessionStorage.getItem('rc_coachType') || '3A';
+      document.getElementById('trainDetailsHeader').textContent = `${trainName} • ${coachType}`;
+
+      loadCoachLayout(currentCoachId);
+    });
+
+    async function loadCoachLayout(coachId) {
+      const grid = document.getElementById('seatGrid');
+      grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:30px;">Loading coach seating grid...</div>';
+
+      try {
+        const layout = await Api.getCoachLayout(coachId);
+        document.getElementById('coachDisplayTitle').textContent = `Coach ${layout.coachNumber} — ${layout.coachType} (${layout.totalSeats} Berths)`;
+        document.getElementById('coachAvailableCount').textContent = `Available: ${layout.availableCount}`;
+
+        renderSeatGrid(layout.seats);
+      } catch (e) {
+        // Fallback realistic layout rendering if backend is starting
+        renderFallbackSeats();
+      }
+    }
+
+    function renderSeatGrid(seats) {
+      const grid = document.getElementById('seatGrid');
+      grid.innerHTML = '';
+
+      let currentCabin = 0;
+      seats.forEach(s => {
+        if (s.cabinNumber !== currentCabin) {
+          currentCabin = s.cabinNumber;
+          const divider = document.createElement('div');
+          divider.className = 'cabin-divider';
+          divider.textContent = `Compartment / Bay ${currentCabin}`;
+          grid.appendChild(divider);
+        }
+
+        const isSelected = selectedSeats.some(sel => sel.seatId === s.seatId);
+        let stateClass = 'state-available';
+        if (isSelected) stateClass = 'state-selected';
+        else if (s.state === 'BOOKED') stateClass = 'state-booked';
+        else if (s.state === 'LOCKED') stateClass = 'state-locked';
+
+        const node = document.createElement('div');
+        node.className = `seat-node ${stateClass}`;
+        node.id = `seat-${s.seatId}`;
+        node.onclick = () => toggleSeatSelection(s);
+
+        node.innerHTML = `
+          <div class="seat-num">${s.seatNumber}</div>
+          <div class="berth-tag">${s.berthType.substring(0, 2)}</div>
+        `;
+
+        grid.appendChild(node);
+      });
+    }
+
+    function renderFallbackSeats() {
+      const grid = document.getElementById('seatGrid');
+      grid.innerHTML = '';
+      const berths = ['LOWER', 'MIDDLE', 'UPPER', 'LOWER', 'MIDDLE', 'UPPER', 'SIDE_LOWER', 'SIDE_UPPER'];
+
+      for (let i = 1; i <= 32; i++) {
+        const cabin = Math.floor((i - 1) / 8) + 1;
+        if ((i - 1) % 8 === 0) {
+          const divider = document.createElement('div');
+          divider.className = 'cabin-divider';
+          divider.textContent = `Compartment / Bay ${cabin}`;
+          grid.appendChild(divider);
+        }
+
+        const bType = berths[(i - 1) % 8];
+        const sObj = { seatId: i, seatNumber: i, berthType: bType, coachNumber: 'B1', state: (i === 1 || i === 3) ? 'BOOKED' : 'AVAILABLE' };
+
+        const node = document.createElement('div');
+        node.className = `seat-node ${sObj.state === 'BOOKED' ? 'state-booked' : 'state-available'}`;
+        node.onclick = () => toggleSeatSelection(sObj);
+        node.innerHTML = `
+          <div class="seat-num">${i}</div>
+          <div class="berth-tag">${bType.substring(0, 2)}</div>
+        `;
+        grid.appendChild(node);
+      }
+    }
+
+    async function toggleSeatSelection(seat) {
+      if (seat.state === 'BOOKED') {
+        Auth.showToast(`Seat ${seat.seatNumber} is already booked.`, 'warning');
+        return;
+      }
+      if (seat.state === 'LOCKED' && !selectedSeats.some(s => s.seatId === seat.seatId)) {
+        Auth.showToast(`Seat ${seat.seatNumber} is temporarily locked by another user.`, 'warning');
+        return;
+      }
+
+      const existingIndex = selectedSeats.findIndex(s => s.seatId === seat.seatId);
+
+      if (existingIndex !== -1) {
+        // Deselect and unlock seat
+        selectedSeats.splice(existingIndex, 1);
+        try {
+          await Api.unlockSeat(seat.seatId);
+        } catch (ignored) {}
+      } else {
+        // Select and dynamically lock seat for 10 minutes
+        try {
+          const lockResp = await Api.lockSeat(seat.seatId, 10);
+          selectedSeats.push(seat);
+          Auth.showToast(`Seat ${seat.seatNumber} locked for 10 minutes!`, 'success');
+          startLockTimer(lockResp.remainingSeconds || 600);
+        } catch (err) {
+          Auth.showToast(err.message, 'danger');
+          return;
+        }
+      }
+
+      updateSelectedUI();
+    }
+
+    function updateSelectedUI() {
+      document.querySelectorAll('.seat-node').forEach(node => {
+        const id = parseInt(node.id.replace('seat-', ''));
+        if (selectedSeats.some(s => s.seatId === id)) {
+          node.classList.add('state-selected');
+          node.classList.remove('state-available');
+        } else {
+          node.classList.remove('state-selected');
+        }
+      });
+
+      const count = selectedSeats.length;
+      document.getElementById('selectedCountBadge').textContent = count;
+      document.getElementById('btnProceedPassengers').disabled = count === 0;
+
+      if (count === 0 && countdownInterval) {
+        clearInterval(countdownInterval);
+        document.getElementById('lockTimerContainer').style.display = 'none';
+      }
+    }
+
+    function startLockTimer(seconds) {
+      clearInterval(countdownInterval);
+      lockExpiryTimestamp = Date.now() + (seconds * 1000);
+      document.getElementById('lockTimerContainer').style.display = 'inline-block';
+
+      function update() {
+        const remainingMs = lockExpiryTimestamp - Date.now();
+        if (remainingMs <= 0) {
+          clearInterval(countdownInterval);
+          document.getElementById('countdownDisplay').textContent = '00:00';
+          Auth.showToast('Seat lock expired! Seats have been released.', 'danger');
+          selectedSeats = [];
+          updateSelectedUI();
+          loadCoachLayout(currentCoachId);
+          return;
+        }
+
+        const totalSec = Math.floor(remainingMs / 1000);
+        const mins = Math.floor(totalSec / 60);
+        const secs = totalSec % 60;
+        document.getElementById('countdownDisplay').textContent =
+          `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      }
+
+      update();
+      countdownInterval = setInterval(update, 1000);
+    }
+
+    async function triggerAutoAllocate() {
+      const trainId = parseInt(sessionStorage.getItem('rc_trainId') || '2');
+      const coachType = sessionStorage.getItem('rc_coachType') || '3A';
+
+      try {
+        const passengers = [
+          { name: 'Primary Passenger', age: 65, gender: 'MALE', preference: 'LOWER' },
+          { name: 'Co-Passenger', age: 28, gender: 'FEMALE', preference: 'LOWER' }
+        ];
+
+        const resp = await Api.autoAllocateSeats(trainId, coachType, passengers, '2026-10-10');
+        if (resp.successful) {
+          selectedSeats = resp.allocations.map(a => ({
+            seatId: a.seatId,
+            seatNumber: a.seatNumber,
+            coachNumber: a.coachNumber,
+            berthType: a.berthType
+          }));
+          Auth.showToast(resp.message, 'success');
+          startLockTimer(600);
+          updateSelectedUI();
+        }
+      } catch (err) {
+        Auth.showToast(`Auto Allocate: ${err.message}`, 'warning');
+      }
+    }
+
+    function changeCoach() {
+      currentCoachId = parseInt(document.getElementById('coachSelect').value);
+      loadCoachLayout(currentCoachId);
+    }
+
+    function proceedToPassengers() {
+      sessionStorage.setItem('rc_selectedSeats', JSON.stringify(selectedSeats));
+      window.location.href = 'passenger-details.html';
+    }
+  </script>
+</body>
+</html>

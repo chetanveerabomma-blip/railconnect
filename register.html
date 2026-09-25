@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Passenger Account — RAILCONNECT</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      🚆 <span>RAILCONNECT</span>
+    </a>
+    <div class="nav-actions"></div>
+  </nav>
+
+  <div class="container" style="max-width: 540px; margin-top: 30px;">
+    <div class="card" style="box-shadow: var(--shadow-xl);">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 2.5rem;">📝</span>
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--primary); margin-top: 8px;">Create Passenger Account</h2>
+        <p style="color: var(--text-muted); font-size: 0.875rem;">Access dynamic seat locking, digital travel passes & berth exchange</p>
+      </div>
+
+      <form id="registerForm" onsubmit="handleRegister(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input type="text" id="firstName" class="form-control" placeholder="e.g. Ramesh" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" id="lastName" class="form-control" placeholder="e.g. Nair" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" id="username" class="form-control" placeholder="Choose a unique username" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="email" class="form-control" placeholder="name@domain.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mobile Phone Number</label>
+          <input type="tel" id="phone" class="form-control" placeholder="10-digit mobile number" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="At least 6 characters" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px;">
+          Create My Account ➔
+        </button>
+      </form>
+
+      <div style="text-align: center; margin-top: 20px; font-size: 0.875rem;">
+        Already registered? <a href="login.html" style="font-weight: 600;">Sign in here</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/railconnect-mock-engine.js"></script>`r`n  <script src="js/seat-layout-engine.js"></script>`r`n  <script src="js/journey-assistant.js"></script>`r`n  <script src="js/api.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    async function handleRegister(e) {
+      e.preventDefault();
+      const payload = {
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName: document.getElementById('lastName').value.trim(),
+        username: document.getElementById('username').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        password: document.getElementById('password').value,
+        role: 'ROLE_PASSENGER'
+      };
+
+      try {
+        const resp = await Api.register(payload);
+        Auth.showToast('Account registered successfully! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1000);
+      } catch (err) {
+        Auth.showToast(err.message, 'danger');
+      }
+    }
+  </script>
+</body>
+</html>

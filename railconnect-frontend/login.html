@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In & Vande Bharat Fleet Experience — RAILCONNECT</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .login-wrapper {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 32px;
+      align-items: stretch;
+      max-width: 1040px;
+      margin: 40px auto;
+    }
+    @media (max-width: 860px) {
+      .login-wrapper {
+        grid-template-columns: 1fr;
+        margin: 20px auto;
+      }
+    }
+    .vb-hero-card {
+      background: linear-gradient(135deg, #0A192F 0%, #1A365D 50%, #2A4365 100%);
+      color: white;
+      border-radius: var(--radius-xl);
+      padding: 36px 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 35px -10px rgba(10, 25, 47, 0.4);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .vb-hero-card::after {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(226, 125, 96, 0.3) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .vb-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(226, 125, 96, 0.25);
+      border: 1px solid #E27D60;
+      color: #FFB399;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .vb-feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 24px 0;
+    }
+    .vb-feature-item {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      backdrop-filter: blur(6px);
+    }
+    .vb-feature-item h4 {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #E2E8F0;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .vb-feature-item p {
+      margin: 4px 0 0 0;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.65);
+    }
+    .role-btn {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .role-btn.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+    .role-btn:not(.active) {
+      background: transparent;
+      color: var(--text-muted);
+    }
+    .role-btn:not(.active):hover {
+      background: rgba(0,0,0,0.05);
+      color: var(--text-main);
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      🚆 <span>RAILCONNECT</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="search-trains.html">Search Trains</a></li>
+      <li><a href="pnr-status.html">PNR Status</a></li>
+      <li><a href="weather-alert.html">Weather Alerts</a></li>
+      <li><a href="berth-exchange.html">Berth Exchange</a></li>
+    </ul>
+    <div class="nav-actions"></div>
+  </nav>
+
+  <div class="container">
+    <div class="login-wrapper">
+
+      <!-- LEFT COLUMN: VANDE BHARAT EXPRESS SHOWCASE -->
+      <div class="vb-hero-card">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="vb-badge">⚡ FLAGSHIP EXPRESS</span>
+            <span style="font-size: 0.8rem; color: rgba(255,255,255,0.7); font-family: monospace;">TRAIN 20608 / 20607</span>
+          </div>
+
+          <div style="border-radius: var(--radius-lg); overflow: hidden; margin: 16px 0 14px 0; box-shadow: 0 10px 25px rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.25);">
+            <img src="assets/vande_bharat.jpg" alt="Vande Bharat Express Semi-High Speed Train" style="width: 100%; height: 185px; object-fit: cover; display: block;">
+          </div>
+
+          <h2 style="font-size: 1.85rem; font-weight: 800; color: white; margin: 0 0 6px 0; line-height: 1.2;">
+            Experience India's Next-Gen Vande Bharat Express
+          </h2>
+          <p style="font-size: 0.88rem; color: rgba(255,255,255,0.8); line-height: 1.5; margin: 0;">
+            Engineered for high-speed connectivity, executive aerodynamic comfort, and seamless intelligent contactless travel passes on RAILCONNECT.
+          </p>
+
+          <!-- Interactive Feature Matrix -->
+          <div class="vb-feature-grid">
+            <div class="vb-feature-item">
+              <h4>🛡️ Kavach Protection</h4>
+              <p>Certified automatic anti-collision train safety system.</p>
+            </div>
+            <div class="vb-feature-item">
+              <h4>⚡ 160 km/h Cruising</h4>
+              <p>Accelerates 0-100 km/h in just 52 seconds.</p>
+            </div>
+            <div class="vb-feature-item">
+              <h4>🔄 180° Rotatable Seats</h4>
+              <p>Executive Chair Car (EC) custom travel orientation.</p>
+            </div>
+            <div class="vb-feature-item">
+              <h4>🌐 Wi-Fi & Telemetry</h4>
+              <p>Live journey tracking & automated passenger infotainment.</p>
+            </div>
+          </div>
+
+          <!-- Featured Route Card -->
+          <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-md); padding: 14px; margin-top: 10px;">
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--accent-saffron); font-weight: 800;">
+              POPULAR VANDE BHARAT CORRIDOR
+            </div>
+            <div style="font-size: 1.05rem; font-weight: 800; color: white; margin-top: 4px; display: flex; align-items: center; justify-content: space-between;">
+              <span>SBC (Bengaluru) ➔ MAS (Chennai)</span>
+              <span style="font-size: 0.85rem; background: rgba(46,133,64,0.3); color: #81E6D9; padding: 2px 8px; border-radius: 4px;">4h 25m</span>
+            </div>
+            <div style="font-size: 0.78rem; color: rgba(255,255,255,0.7); margin-top: 4px;">
+              Departs: 05:45 AM • Speed: 130 km/h • Available in CC & EC
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size: 0.78rem; color: rgba(255,255,255,0.65);">
+            Booking open for upcoming departure dates
+          </div>
+          <a href="search-trains.html" style="font-size: 0.85rem; color: #FFB399; font-weight: 700; text-decoration: none;">
+            Find Vande Bharat ➔
+          </a>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: MULTI-ROLE SIGN IN PORTAL -->
+      <div class="card" style="box-shadow: var(--shadow-xl); padding: 32px 28px; display: flex; flex-direction: column; justify-content: center;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <span style="font-size: 2.2rem;">🔐</span>
+          <h2 style="font-size: 1.55rem; font-weight: 800; color: var(--primary); margin-top: 6px;">Portal Authentication</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;">Sign in to access digital tickets, passes, or operations</p>
+        </div>
+
+        <!-- Role Selector Tabs -->
+        <div style="display: flex; gap: 4px; margin-bottom: 20px; background: var(--bg-subtle); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+          <button type="button" class="role-btn active" id="tabPassenger" onclick="setRoleTab('PASSENGER')">Passenger</button>
+          <button type="button" class="role-btn" id="tabInspector" onclick="setRoleTab('INSPECTOR')">Inspector</button>
+          <button type="button" class="role-btn" id="tabAdmin" onclick="setRoleTab('ADMIN')">Admin</button>
+        </div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Username or Registered Email</label>
+            <input type="text" id="username" class="form-control" placeholder="Enter username" value="rahul_sharma" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="password" class="form-control" placeholder="Enter password" value="password123" required>
+          </div>
+
+          <button type="submit" id="submitBtn" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px;">
+            Authenticate ➔
+          </button>
+        </form>
+
+        <!-- Quick 1-Click Demo Credentials Box -->
+        <div style="margin-top: 20px; padding: 12px; background: var(--bg-subtle); border-radius: var(--radius-md); font-size: 0.8rem; border: 1px solid var(--border);">
+          <div style="font-weight: 700; color: var(--text-main); margin-bottom: 6px;">⚡ Quick Test Credentials (1-Click Fill):</div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm" onclick="fillCreds('rahul_sharma', 'password123', 'PASSENGER')">Rahul (Passenger)</button>
+            <button class="btn btn-secondary btn-sm" onclick="fillCreds('inspector_anand', 'password123', 'INSPECTOR')">Inspector Anand</button>
+            <button class="btn btn-secondary btn-sm" onclick="fillCreds('admin', 'password123', 'ADMIN')">Admin (Operations)</button>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 18px; font-size: 0.85rem;">
+          New to RAILCONNECT? <a href="register.html" style="font-weight: 700; color: var(--primary);">Register as Passenger</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/railconnect-mock-engine.js"></script>`r`n  <script src="js/seat-layout-engine.js"></script>`r`n  <script src="js/journey-assistant.js"></script>`r`n  <script src="js/api.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let currentRole = 'PASSENGER';
+
+    function setRoleTab(role) {
+      currentRole = role;
+      document.getElementById('tabPassenger').className = role === 'PASSENGER' ? 'role-btn active' : 'role-btn';
+      document.getElementById('tabInspector').className = role === 'INSPECTOR' ? 'role-btn active' : 'role-btn';
+      document.getElementById('tabAdmin').className = role === 'ADMIN' ? 'role-btn active' : 'role-btn';
+
+      if (role === 'PASSENGER') fillCreds('rahul_sharma', 'password123', 'PASSENGER');
+      else if (role === 'INSPECTOR') fillCreds('inspector_anand', 'password123', 'INSPECTOR');
+      else if (role === 'ADMIN') fillCreds('admin', 'password123', 'ADMIN');
+    }
+
+    function fillCreds(u, p, role) {
+      document.getElementById('username').value = u;
+      document.getElementById('password').value = p;
+      currentRole = role;
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value;
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Authenticating...';
+
+      try {
+        const resp = await Api.login(u, p);
+        Auth.showToast(`Welcome back, ${resp.fullName || resp.username}!`, 'success');
+        setTimeout(() => {
+          if (resp.role === 'ROLE_ADMIN' || resp.role === 'ROLE_INSPECTOR') {
+            window.location.href = 'admin-dashboard.html';
+          } else {
+            window.location.href = 'index.html';
+          }
+        }, 600);
+      } catch (err) {
+        Auth.showToast(err.message, 'danger');
+        btn.disabled = false;
+        btn.textContent = 'Authenticate ➔';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const role = urlParams.get('role');
+      if (role) {
+        setRoleTab(role.toUpperCase());
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passenger Berth Exchange Portal — RAILCONNECT</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      🚆 <span>RAILCONNECT</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="search-trains.html">Search Trains</a></li>
+      <li><a href="pnr-status.html">PNR Status</a></li>
+      <li><a href="weather-alert.html">Weather Alerts</a></li>
+      <li><a href="berth-exchange.html" class="active">Berth Exchange</a></li>
+      <li><a href="booking-history.html">My Bookings</a></li>
+    </ul>
+    <div class="nav-actions"></div>
+  </nav>
+
+  <div class="container">
+    <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+      <div>
+        <h1>Co-Passenger Berth Exchange Portal</h1>
+        <p>Propose and accept berth swaps with verified co-passengers on your train with 10-point rule validation.</p>
+      </div>
+      <div>
+        <span class="badge badge-info" style="font-size:0.85rem; padding:6px 12px;">P2P Swap Protocol</span>
+      </div>
+    </div>
+
+    <!-- 10 Rules Card (Collapsible / Banner) -->
+    <div class="card" style="background:var(--bg-subtle); padding:16px 20px;">
+      <div style="font-weight:700; color:var(--primary); font-size:0.95rem; margin-bottom:6px;">
+        📜 10 Strict Railway Business Rules Enforced by Exchange Rule Engine:
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:6px; font-size:0.8rem; color:var(--text-muted);">
+        <div>1. Both tickets must be CONFIRMED</div>
+        <div>2. Must be on the exact same train</div>
+        <div>3. Same journey date required</div>
+        <div>4. Journey corridor segments must overlap</div>
+        <div>5. Compatible travel classes (3A ➔ 3A, etc.)</div>
+        <div>6. Cancelled tickets prohibited from exchange</div>
+        <div>7. Used tickets prohibited from exchange</div>
+        <div>8. Expired journeys cannot exchange</div>
+        <div>9. Only 1 active pending exchange request</div>
+        <div>10. Mandatory audit trail for compliance</div>
+      </div>
+    </div>
+
+    <!-- Active Requests Involving User -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">My Exchange Requests & Incoming Proposals</h3>
+        <button class="btn btn-secondary btn-sm" onclick="loadMyRequests()">🔄 Refresh</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Train & Date</th>
+              <th>Requester (From)</th>
+              <th>Target (To)</th>
+              <th>Status</th>
+              <th>Reason</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="myRequestsTableBody">
+            <!-- Dynamic request rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Find Eligible Co-Passengers to Propose Swap -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Propose a New Berth Swap</h3>
+      </div>
+      <p style="color:var(--text-muted); font-size:0.875rem; margin-bottom:16px;">
+        Find confirmed co-passengers travelling on your train who may be willing to exchange their berth (e.g. Upper for Lower).
+      </p>
+
+      <form id="swapSearchForm" onsubmit="searchEligible(event)" class="form-row" style="align-items:flex-end;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Train ID / Number</label>
+          <input type="number" id="swapTrainId" class="form-control" value="2" required>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Journey Date</label>
+          <input type="date" id="swapDate" class="form-control" required>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Travel Class</label>
+          <select id="swapCoachType" class="form-control">
+            <option value="3A" selected>3A (AC 3 Tier)</option>
+            <option value="SL">SL (Sleeper)</option>
+            <option value="2A">2A (AC 2 Tier)</option>
+          </select>
+        </div>
+        <div>
+          <button type="submit" class="btn btn-primary" style="height:42px; width:100%;">
+            Find Co-Passengers
+          </button>
+        </div>
+      </form>
+
+      <div id="eligibleListContainer" style="margin-top:20px;">
+        <!-- Eligible passengers table -->
+      </div>
+    </div>
+  </div>
+
+  <script src="js/railconnect-mock-engine.js"></script>`r`n  <script src="js/seat-layout-engine.js"></script>`r`n  <script src="js/journey-assistant.js"></script>`r`n  <script src="js/api.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 2);
+      document.getElementById('swapDate').value = tomorrow.toISOString().split('T')[0];
+
+      loadMyRequests();
+    });
+
+    async function loadMyRequests() {
+      const tbody = document.getElementById('myRequestsTableBody');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading exchange records...</td></tr>';
+
+      try {
+        const list = await Api.getMyExchanges();
+        renderMyRequests(list);
+      } catch (e) {
+        // Render realistic demo scenario (Priya requests Rahul's lower berth)
+        renderMyRequests([{
+          id: 1,
+          trainNumber: '12638',
+          trainName: 'Pandian Superfast Express',
+          journeyDate: '2026-10-10',
+          requesterPassengerName: 'Priya Patel',
+          requesterCoach: 'B1',
+          requesterSeatNumber: 3,
+          requesterBerthType: 'UPPER',
+          targetPassengerName: 'Rahul Sharma',
+          targetCoach: 'B1',
+          targetSeatNumber: 1,
+          targetBerthType: 'LOWER',
+          status: 'REQUESTED',
+          requestReason: 'Prefers lower berth due to slight knee sprain. Both in Coach B1.'
+        }]);
+      }
+    }
+
+    function renderMyRequests(list) {
+      const tbody = document.getElementById('myRequestsTableBody');
+      if (!list || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">No active exchange requests found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(r => `
+        <tr>
+          <td><strong>#${r.id}</strong></td>
+          <td>
+            <strong>${r.trainNumber}</strong>
+            <div style="font-size:0.75rem; color:var(--text-muted);">${r.journeyDate}</div>
+          </td>
+          <td>
+            <strong>${r.requesterPassengerName}</strong>
+            <div style="font-size:0.8rem; color:var(--primary); font-weight:600;">Coach ${r.requesterCoach} • #${r.requesterSeatNumber} (${r.requesterBerthType})</div>
+          </td>
+          <td>
+            <strong>${r.targetPassengerName}</strong>
+            <div style="font-size:0.8rem; color:var(--accent-green); font-weight:600;">Coach ${r.targetCoach} • #${r.targetSeatNumber} (${r.targetBerthType})</div>
+          </td>
+          <td>
+            <span class="badge ${r.status === 'COMPLETED' || r.status === 'APPROVED' ? 'badge-success' : r.status === 'REJECTED' ? 'badge-danger' : 'badge-warning'}">
+              ${r.status}
+            </span>
+          </td>
+          <td style="font-size:0.8rem; color:var(--text-muted); max-width:200px;">
+            ${r.requestReason || 'Berth swap request'}
+          </td>
+          <td>
+            ${r.status === 'REQUESTED' ? `
+              <div style="display:flex; gap:6px;">
+                <button class="btn btn-success btn-sm" onclick="respondExchange(${r.id}, true)">Accept</button>
+                <button class="btn btn-danger btn-sm" onclick="respondExchange(${r.id}, false)">Decline</button>
+              </div>
+            ` : `<span style="font-size:0.8rem; color:var(--text-muted);">No action required</span>`}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function respondExchange(id, accept) {
+      try {
+        const resp = await Api.respondBerthExchange(id, accept, accept ? 'Agreed to swap berth' : 'Declined swap');
+        Auth.showToast(accept ? 'You accepted the berth exchange! Pending final admin clearance.' : 'Exchange declined.', 'info');
+        loadMyRequests();
+      } catch (err) {
+        Auth.showToast(err.message, 'danger');
+      }
+    }
+
+    async function searchEligible(e) {
+      e.preventDefault();
+      const trainId = document.getElementById('swapTrainId').value;
+      const date = document.getElementById('swapDate').value;
+      const coach = document.getElementById('swapCoachType').value;
+      const container = document.getElementById('eligibleListContainer');
+
+      container.innerHTML = '<div style="text-align:center; padding:20px;">Scanning train manifest for compatible co-passengers...</div>';
+
+      try {
+        const eligible = await Api.getEligiblePassengers(trainId, date, coach, 2);
+        renderEligible(eligible);
+      } catch (err) {
+        // Fallback demo passenger
+        renderEligible([{
+          id: 1,
+          booking: { id: 1, pnrNumber: '4827193056' },
+          passengerName: 'Rahul Sharma',
+          passengerAge: 29,
+          passengerGender: 'MALE',
+          allocatedCoach: 'B1',
+          allocatedSeatNumber: 1,
+          allocatedBerthType: 'LOWER',
+          status: 'CONFIRMED'
+        }]);
+      }
+    }
+
+    function renderEligible(passengers) {
+      const container = document.getElementById('eligibleListContainer');
+      if (!passengers || passengers.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); text-align:center;">No eligible co-passengers available on this train and date yet.</p>';
+        return;
+      }
+
+      container.innerHTML = `
+        <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:10px;">Eligible Confirmed Co-Passengers on Train:</h4>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Passenger</th>
+                <th>Coach</th>
+                <th>Seat #</th>
+                <th>Berth Type</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${passengers.map(p => `
+                <tr>
+                  <td><strong>${p.passengerName}</strong> (${p.passengerAge} / ${p.passengerGender})</td>
+                  <td><span class="badge badge-info">${p.allocatedCoach}</span></td>
+                  <td><strong>#${p.allocatedSeatNumber}</strong></td>
+                  <td><strong style="color:var(--primary);">${p.allocatedBerthType}</strong></td>
+                  <td><span class="badge badge-success">CONFIRMED</span></td>
+                  <td>
+                    <button class="btn btn-primary btn-sm" onclick="sendSwapRequest(${p.id})">
+                      Propose Swap ➔
+                    </button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    async function sendSwapRequest(targetPassengerId) {
+      const reason = prompt('Please state reason for berth exchange (e.g. Prefer lower berth, travelling with elderly family):', 'Prefer lower berth due to knee sprain');
+      if (!reason) return;
+
+      try {
+        const payload = {
+          requesterBookingId: 2,
+          requesterPassengerId: 2,
+          targetBookingId: 1,
+          targetPassengerId: targetPassengerId,
+          reason
+        };
+
+        const resp = await Api.requestBerthExchange(payload);
+        Auth.showToast('Exchange request sent to co-passenger successfully!', 'success');
+        loadMyRequests();
+      } catch (err) {
+        Auth.showToast(err.message, 'danger');
+      }
+    }
+  </script>
+</body>
+</html>

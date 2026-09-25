@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile & Account — RAILCONNECT</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      🚆 <span>RAILCONNECT</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="search-trains.html">Search Trains</a></li>
+      <li><a href="pnr-status.html">PNR Status</a></li>
+      <li><a href="weather-alert.html">Weather Alerts</a></li>
+      <li><a href="berth-exchange.html">Berth Exchange</a></li>
+      <li><a href="booking-history.html">My Bookings</a></li>
+    </ul>
+    <div class="nav-actions"></div>
+  </nav>
+
+  <div class="container" style="max-width: 860px;">
+
+    <!-- Profile Header Card -->
+    <div class="card" style="margin-bottom: 24px; padding: 28px; background: linear-gradient(135deg, rgba(26,54,93,0.05) 0%, rgba(226,125,96,0.06) 100%);">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+        <div style="display: flex; align-items: center; gap: 18px;">
+          <div style="width: 72px; height: 72px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 700; box-shadow: var(--shadow-md);">
+            <span id="profAvatar">👤</span>
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h2 id="profFullName" style="font-size: 1.6rem; font-weight: 800; color: var(--primary); margin: 0;">Rahul Sharma</h2>
+              <span class="badge badge-info" id="profRoleBadge">PASSENGER</span>
+            </div>
+            <p id="profUsernameEmail" style="color: var(--text-muted); font-size: 0.9rem; margin: 4px 0 0 0;">
+              @rahul_sharma • rahul.sharma@example.com
+            </p>
+            <div style="font-size: 0.8rem; color: var(--accent-green); margin-top: 4px; font-weight: 600;">
+              ✓ KYC Verified Railway Digital Identity
+            </div>
+          </div>
+        </div>
+        <div>
+          <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">Log Out</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+      <div class="card" style="padding: 16px; text-align: center;">
+        <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary);" id="statTrips">14</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 4px;">Journeys Completed</div>
+      </div>
+      <div class="card" style="padding: 16px; text-align: center;">
+        <div style="font-size: 1.8rem; font-weight: 800; color: var(--accent-green);" id="statKm">6,240</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 4px;">Kilometers Traveled</div>
+      </div>
+      <div class="card" style="padding: 16px; text-align: center;">
+        <div style="font-size: 1.8rem; font-weight: 800; color: var(--accent-saffron);" id="statPasses">2</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 4px;">Active Travel Passes</div>
+      </div>
+      <div class="card" style="padding: 16px; text-align: center;">
+        <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary);" id="statPoints">850</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 4px;">Eco-Travel Green Miles</div>
+      </div>
+    </div>
+
+    <!-- Detailed Profile & Preference Settings -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+
+      <!-- Left Column: Personal Information -->
+      <div class="card">
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+          👤 Personal Information
+        </h3>
+        <form id="profileForm" onsubmit="saveProfile(event)">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="inputFullName" class="form-control" value="Rahul Sharma" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="inputEmail" class="form-control" value="rahul.sharma@example.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" id="inputPhone" class="form-control" value="+91 98765 43210" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Government ID Type</label>
+            <input type="text" class="form-control" value="Aadhaar (XXXX-XXXX-4921)" disabled style="background: var(--bg-subtle);">
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top: 8px;">Save Profile Changes</button>
+        </form>
+      </div>
+
+      <!-- Right Column: Journey & Travel Preferences -->
+      <div class="card">
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+          ⚙️ Journey Preferences & UI
+        </h3>
+
+        <div class="form-group">
+          <label class="form-label">Preferred Platform Language</label>
+          <select id="prefLanguage" class="form-control" onchange="changeProfileLanguage(this.value)">
+            <option value="en">English (EN)</option>
+            <option value="hi">हिन्दी (Hindi - HI)</option>
+            <option value="te">తెలుగు (Telugu - TE)</option>
+            <option value="ta">தமிழ் (Tamil - TA)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Default Berth Preference</label>
+          <select id="prefBerth" class="form-control">
+            <option value="LOWER">Lower Berth (Senior / Preferred)</option>
+            <option value="MIDDLE">Middle Berth</option>
+            <option value="UPPER">Upper Berth</option>
+            <option value="SIDE_LOWER">Side Lower (Window View)</option>
+            <option value="SIDE_UPPER">Side Upper</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Meal Preference</label>
+          <select id="prefMeal" class="form-control">
+            <option value="VEG">Pure Vegetarian (Jain Available)</option>
+            <option value="NON_VEG">Standard Non-Vegetarian</option>
+            <option value="NONE">No Food Required</option>
+          </select>
+        </div>
+
+        <div style="margin-top: 20px; padding: 14px; background: var(--bg-subtle); border-radius: var(--radius-md);">
+          <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 6px;">🔔 Real-Time Journey Notifications:</div>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-bottom: 6px; cursor: pointer;">
+            <input type="checkbox" checked> SMS / WhatsApp PNR updates & weather alerts
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+            <input type="checkbox" checked> Co-passenger berth exchange push notifications
+          </label>
+        </div>
+
+        <button type="button" class="btn btn-secondary" style="margin-top: 16px; width: 100%;" onclick="savePreferences()">
+          Save Preferences
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="js/railconnect-mock-engine.js"></script>`r`n  <script src="js/seat-layout-engine.js"></script>`r`n  <script src="js/journey-assistant.js"></script>`r`n  <script src="js/api.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = Api.getUser();
+      if (user) {
+        document.getElementById('profFullName').textContent = user.fullName || user.username;
+        document.getElementById('profAvatar').textContent = (user.fullName || user.username).charAt(0).toUpperCase();
+        document.getElementById('profUsernameEmail').textContent = `@${user.username} • ${user.email}`;
+        document.getElementById('profRoleBadge').textContent = user.role.replace('ROLE_', '');
+        document.getElementById('inputFullName').value = user.fullName || user.username;
+        document.getElementById('inputEmail').value = user.email || '';
+      }
+
+      const currentLang = localStorage.getItem('railconnect_lang') || 'en';
+      document.getElementById('prefLanguage').value = currentLang;
+    });
+
+    function changeProfileLanguage(lang) {
+      if (window.I18n) {
+        window.I18n.setLanguage(lang);
+        Auth.showToast(`Platform language set to: ${lang.toUpperCase()}`, 'info');
+      }
+    }
+
+    function saveProfile(e) {
+      e.preventDefault();
+      const user = Api.getUser() || {};
+      user.fullName = document.getElementById('inputFullName').value;
+      user.email = document.getElementById('inputEmail').value;
+      Api.setUser(user);
+
+      document.getElementById('profFullName').textContent = user.fullName;
+      document.getElementById('profUsernameEmail').textContent = `@${user.username || 'user'} • ${user.email}`;
+      Auth.showToast('Profile information updated successfully!', 'success');
+    }
+
+    function savePreferences() {
+      const berth = document.getElementById('prefBerth').value;
+      const meal = document.getElementById('prefMeal').value;
+      localStorage.setItem('railconnect_pref_berth', berth);
+      localStorage.setItem('railconnect_pref_meal', meal);
+      Auth.showToast('Travel and dietary preferences saved!', 'success');
+    }
+  </script>
+</body>
+</html>

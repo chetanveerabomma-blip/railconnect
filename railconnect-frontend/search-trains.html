@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Trains — RAILCONNECT</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      🚆 <span>RAILCONNECT</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+      <li><a href="search-trains.html" class="active" data-i18n="nav.search">Search Trains</a></li>
+      <li><a href="pnr-status.html" data-i18n="nav.pnr">PNR Status</a></li>
+      <li><a href="weather-alert.html" data-i18n="nav.weather">Weather Alerts</a></li>
+      <li><a href="berth-exchange.html" data-i18n="nav.berthExchange">Berth Exchange</a></li>
+      <li><a href="booking-history.html" data-i18n="nav.bookings">My Bookings</a></li>
+    </ul>
+    <div class="nav-actions"></div>
+  </nav>
+
+  <div class="container">
+    <!-- Top Filter Bar -->
+    <div class="card" style="padding: 18px 24px;">
+      <form id="trainSearchForm" onsubmit="executeSearch(event)" class="form-row" style="align-items: flex-end;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Origin Station</label>
+          <input type="text" id="fromStation" class="form-control" placeholder="Station Code (e.g. SBC, TPJ, NDLS)" value="SBC" required>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Destination Station</label>
+          <input type="text" id="toStation" class="form-control" placeholder="Station Code (e.g. MAS, MS, BCT)" value="MAS" required>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Journey Date</label>
+          <input type="date" id="journeyDate" class="form-control" required>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Class Filter</label>
+          <select id="classFilter" class="form-control" onchange="filterResults()">
+            <option value="ALL">All Classes</option>
+            <option value="EC">Executive Chair Car (EC)</option>
+            <option value="CC">AC Chair Car (CC)</option>
+            <option value="3A">AC 3 Tier (3A)</option>
+            <option value="2A">AC 2 Tier (2A)</option>
+            <option value="1A">AC First Class (1A)</option>
+            <option value="SL">Sleeper (SL)</option>
+          </select>
+        </div>
+        <div>
+          <button type="submit" class="btn btn-primary" style="height: 42px; width: 100%;">
+            🔍 Update Results
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Live Weather Alert Banner for this search -->
+    <div id="routeWeatherBanner" style="display:none;" class="weather-card"></div>
+
+    <!-- Results Status Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <h2 id="searchResultsTitle" style="font-size: 1.4rem; font-weight: 800; color: var(--primary);">Available Trains</h2>
+        <p id="searchResultsSub" style="color: var(--text-muted); font-size: 0.85rem;">Showing operational schedules with live seat inventory</p>
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-muted);">
+        Sort by: <strong style="color: var(--primary);">Departure Time</strong>
+      </div>
+    </div>
+
+    <!-- Train Cards Container -->
+    <div id="trainsList">
+      <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+        Loading scheduled trains from backend...
+      </div>
+    </div>
+  </div>
+
+  <script src="js/railconnect-mock-engine.js"></script>`r`n  <script src="js/seat-layout-engine.js"></script>`r`n  <script src="js/journey-assistant.js"></script>`r`n  <script src="js/api.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let rawTrainResults = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const from = urlParams.get('from') || 'SBC';
+      const to = urlParams.get('to') || 'MAS';
+      let date = urlParams.get('date');
+
+      if (!date) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 2);
+        date = tomorrow.toISOString().split('T')[0];
+      }
+
+      document.getElementById('fromStation').value = from;
+      document.getElementById('toStation').value = to;
+      document.getElementById('journeyDate').value = date;
+
+      loadTrains(from, to, date);
+      loadRouteWeather(from, to, date);
+    });
+
+    async function executeSearch(e) {
+      if (e) e.preventDefault();
+      const from = document.getElementById('fromStation').value.trim();
+      const to = document.getElementById('toStation').value.trim();
+      const date = document.getElementById('journeyDate').value;
+      loadTrains(from, to, date);
+      loadRouteWeather(from, to, date);
+    }
+
+    async function loadRouteWeather(from, to, date) {
+      try {
+        const w = await Api.getJourneyWeather(from, to, date);
+        const banner = document.getElementById('routeWeatherBanner');
+        banner.className = `weather-card severity-${w.destinationWeather.severity}`;
+        banner.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <span class="badge ${w.destinationWeather.severity === 'WARNING' || w.destinationWeather.severity === 'SEVERE' ? 'badge-danger' : 'badge-success'}">
+                ${w.destinationWeather.severity} Alert
+              </span>
+              <strong style="margin-left: 8px;">Destination Weather: ${w.destinationWeather.stationName}</strong>
+              <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                ${w.destinationWeather.condition} • Temp: ${w.destinationWeather.temperatureC}°C • Rain Probability: ${w.destinationWeather.rainProbability}%
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <span class="badge badge-saffron">${w.banner}</span>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top:4px;">
+                <a href="weather-alert.html?from=${from}&to=${to}&date=${date}">Full Weather Telemetry ➔</a>
+              </div>
+            </div>
+          </div>
+        `;
+        banner.style.display = 'block';
+      } catch (e) {
+        console.warn('Weather fetch error:', e);
+      }
+    }
+
+    async function loadTrains(from, to, date) {
+      const container = document.getElementById('trainsList');
+      container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);">Fetching train routes & availability...</div>';
+
+      try {
+        const trains = await Api.searchTrains(from, to, date);
+        rawTrainResults = trains;
+        renderTrains(trains);
+      } catch (err) {
+        container.innerHTML = `
+          <div class="card" style="text-align:center; padding:40px;">
+            <p style="color:var(--danger); font-weight:600;">Unable to load trains: ${err.message}</p>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:8px;">Ensure railconnect-backend is running on http://localhost:8080</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderTrains(trains) {
+      const container = document.getElementById('trainsList');
+      if (!trains || trains.length === 0) {
+        container.innerHTML = `
+          <div class="card" style="text-align:center; padding:40px;">
+            <p style="font-size:1.1rem; font-weight:700;">No direct trains found for this route.</p>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin-top:6px;">Try popular routes: TPJ ➔ MAS, SBC ➔ MAS, or NDLS ➔ BCT.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const date = document.getElementById('journeyDate').value;
+      const classFilter = document.getElementById('classFilter').value;
+
+      container.innerHTML = trains.map(t => {
+        const filteredClasses = classFilter === 'ALL'
+          ? t.availableClasses
+          : t.availableClasses.filter(c => c.coachType === classFilter);
+
+        const classButtons = filteredClasses.map(c => `
+          <div style="border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 14px; background:#fff; text-align:center; min-width:110px;">
+            <div style="font-weight:800; color:var(--primary); font-size:0.95rem;">${c.coachType}</div>
+            <div style="font-weight:700; color:var(--accent-green); font-size:0.85rem; margin-top:2px;">₹${c.fare.toFixed(2)}</div>
+            <div style="font-size:0.75rem; color: ${c.availableSeats > 0 ? 'var(--accent-green)' : 'var(--warning)'}; font-weight:600; margin-top:2px;">
+              ${c.status}
+            </div>
+            <button class="btn btn-primary btn-sm" style="margin-top:8px; width:100%;"
+              onclick="startBooking(${t.trainId}, '${t.trainNumber}', '${t.trainName}', '${c.coachType}', ${c.fare}, '${t.fromStationCode}', '${t.toStationCode}', '${date}')">
+              Select
+            </button>
+          </div>
+        `).join('');
+
+        return `
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <div>
+                ${t.trainType === 'VANDE_BHARAT' ? '<span class="badge" style="background: linear-gradient(135deg, #E27D60 0%, #C53030 100%); color: white; font-weight: 800;">⚡ VANDE BHARAT</span>' : `<span class="badge badge-info">${t.trainType}</span>`}
+                <span style="font-weight:800; font-size:1.15rem; color:var(--primary); margin-left:6px;">${t.trainNumber}</span>
+                <span style="font-weight:700; font-size:1.15rem; color:var(--text-main); margin-left:6px;">${t.trainName}</span>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">
+                  Runs on: <strong>${t.runningDays}</strong> • Distance: <strong>${t.distanceKm} km</strong>
+                </div>
+              </div>
+              <div>
+                <a href="train-details.html?trainId=${t.trainId}" class="btn btn-secondary btn-sm">
+                  View Timetable & Route Stops ➔
+                </a>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:16px; background:var(--bg-subtle); padding:16px; border-radius:var(--radius-md); margin-bottom:16px; text-align:center;">
+              <div>
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Departure</div>
+                <div style="font-size:1.25rem; font-weight:800; color:var(--text-main);">${t.departureTime}</div>
+                <div style="font-size:0.8rem; color:var(--primary); font-weight:600;">${t.fromStationName}</div>
+              </div>
+              <div style="display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">${t.durationHours} hrs</span>
+                <div style="width:80%; height:2px; background:var(--border); margin:4px 0;"></div>
+                <span style="font-size:0.7rem; color:var(--accent-green); font-weight:700;">Direct Route</span>
+              </div>
+              <div>
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Arrival</div>
+                <div style="font-size:1.25rem; font-weight:800; color:var(--text-main);">${t.arrivalTime}</div>
+                <div style="font-size:0.8rem; color:var(--primary); font-weight:600;">${t.toStationName}</div>
+              </div>
+            </div>
+
+            <!-- Class availability cards -->
+            <div style="display:flex; gap:12px; overflow-x:auto; padding-bottom:6px;">
+              ${classButtons}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterResults() {
+      renderTrains(rawTrainResults);
+    }
+
+    function startBooking(trainId, trainNumber, trainName, coachType, fare, from, to, date) {
+      // Store selected booking state in sessionStorage for smooth checkout pipeline
+      sessionStorage.setItem('rc_trainId', trainId);
+      sessionStorage.setItem('rc_trainNumber', trainNumber);
+      sessionStorage.setItem('rc_trainName', trainName);
+      sessionStorage.setItem('rc_coachType', coachType);
+      sessionStorage.setItem('rc_fare', fare);
+      sessionStorage.setItem('rc_from', from);
+      sessionStorage.setItem('rc_to', to);
+      sessionStorage.setItem('rc_date', date);
+
+      window.location.href = `seat-selection.html?trainId=${trainId}&coachType=${coachType}&date=${date}`;
+    }
+  </script>
+</body>
+</html>
